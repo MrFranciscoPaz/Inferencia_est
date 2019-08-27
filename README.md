@@ -7,6 +7,6 @@ Las notas están basadas en el libro
 
 - What Teachers Should Know About the Bootstrap: Resampling in the Undergraduate Statistics Curriculum
 
--Hesterberg, Tim C. 2015. “What Teachers Should Know About the Bootstrap: Resampling in the Undergraduate Statistics Curriculum.” The American Statistician 69 (4). Taylor & Francis:371–86. 
+- Hesterberg, Tim C. 2015. “What Teachers Should Know About the Bootstrap: Resampling in the Undergraduate Statistics Curriculum.” The American Statistician 69 (4). Taylor & Francis:371–86. 
 
 - Notas de Estadística Computacional, ITAM, María Teresa Ortiz (2018)
