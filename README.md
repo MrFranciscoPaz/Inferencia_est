@@ -2,8 +2,9 @@
 Notas y ejercicios para el curso de inferencia estadística 
 
 
-Las notas están basadas en el libro 
--Larry Wasserman - All of Statistics A Concise Course in Statistical Inference-Springer (2004)
+Las notas están basadas en los siguientes libros/papers
+
+- Larry Wasserman - All of Statistics A Concise Course in Statistical Inference-Springer (2004)
 
 - What Teachers Should Know About the Bootstrap: Resampling in the Undergraduate Statistics Curriculum
 
