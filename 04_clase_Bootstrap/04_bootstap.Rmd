@@ -1,0 +1,223 @@
+---
+title: "Plug-in y Bootstrap"
+author: "Francisco Paz"
+date: "28/8/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(pander) #Paquetería para sacar tablas más bonitas
+library(tidyverse)
+```
+
+### Plug-in y Bootstrap
+
+Recordemos que el **plug-in** es un método para estimar parámetros a partir de muestras. La estimación  de un parámetro $\theta = t(P)$ se define como:
+
+$$
+\hat{\theta} = t(P_n)
+$$
+
+
+Aquí solo estamos obteniendo una estimación y en ningun momento hablamos de presición
+
+Vamos a generar una población utilizando la generación de números aleatorios para una normal$N(10,2)$. Esto representa la distribución de cierta caracteríztica. Extraemos una muestra aleatoria $x$, y con ella queremos inferir la media de la población (En la mayoría de los problemas vamos a desconocer $\mu$ o $\sigma$ y queremos encontrar su verdadero valor)
+
+```{r}
+set.seed(9516)
+y <- rnorm(1000,10,2)
+mu <- mean(y)
+mu
+```
+
+De la forma en la que planteamos el problema, es fácil ver que el verdadero valor de $\mu = 10.06$. Ahora veamos la estimación con el principio del plug-in. Primero tomemos una muestra de $y$
+
+```{r}
+y_mues <- sample(y, size = 200, replace = FALSE)
+```
+
+Ahora, calculamos el estimador plug-in para la muestra.¿Cómo la harías?
+
+```{r}
+mean(y_mues)
+```
+
+Está es la estimación mediante plug-in. Podemos observar que existe una diferencia entre la media de $y$  y $y_{muestra}$.
+
+¿cómo se relaciona esto con bootstrap?
+
+Para empezar a generar intuición acerca de lo que estamos viendo, veamos una gráfica de nuestra muestra.
+
+```{r}
+y_datos <- as.data.frame(y_mues)
+ggplot(y_datos, aes(x = y_mues )) + 
+  geom_histogram(alpha = 0.5) +
+  geom_vline(xintercept = mu, col = 'red') +
+  geom_vline(xintercept = mean(y_mues), col ='blue')
+```
+
+Hagamos una función que nos ayude a calcular.
+
+```{r}
+Bootstrap <- function(x) {
+  n <-length(x)
+  muestra_boot <- sample(x, size = n, replace = TRUE)
+  muestra_boot
+}
+```
+
+Veamos lo que ocurre con **una** muestra bootstrap
+```{r}
+mb <- Bootstrap(y_mues)
+mean(mb)
+```
+
+¿Cuál es el significado de este valor?
+
+```{r}
+mb_datos <- as.data.frame(mb)
+ggplot(mb_datos,aes(x = mb)) +
+  geom_histogram(alpha = 0.5) +
+  geom_vline(xintercept = mu, col='red')+
+  geom_vline(xintercept = mean(y_mues), col ='blue')+
+  geom_vline(xintercept = mean(mb), col = 'black')
+```
+
+Para lo siguiente, redefinitemos la función que calcula bootstrap
+```{r}
+Bootstrap <- function(x) {
+  n <-length(x)
+  muestra_boot <- sample(x, size = n, replace = TRUE)
+  mean(muestra_boot)
+}
+```
+
+Calculamos **B** muestras bootstrap
+```{r}
+B <- 100
+thetas <- rerun(B,Bootstrap(y_mues)) %>% flatten_dbl()
+mean(thetas)
+```
+
+Y ahora si, quiero cuantificar la incertidumbre. Se presenta el histograma de las thetas, que recordemos estos son las medias para cada bootstrap
+
+```{r}
+t_datos <- as.data.frame(thetas)
+ggplot(t_datos, aes(x = thetas)) +
+  geom_histogram(alpha = 0.5)+
+  geom_vline(xintercept = mu, col ='red')+
+  geom_vline(xintercept = mean(y_mues), col= 'blue')+
+  geom_vline(xintercept = mean(thetas),col = 'black',
+             linetype = "dashed")
+  
+```
+
+¿Qué fue lo que ganamos?
+
+Definimos la función de error estandar.
+
+```{r}
+se <- function(x) sqrt(sum((x - mean(x)) ^ 2)) / length(x)
+```
+
+```{r}
+se(thetas)
+```
+
+Veamos un ejemplo un poco más complejo.
+```{r}
+set.seed(5865)
+a <- data.frame(length = rnorm(1000, 1, 0.5))
+b <- data.frame(length = rnorm(5000, 5, 1))
+
+a$pob <- 'a'
+b$pob <- 'b'
+
+datos <- as.data.frame(rbind(a, b))
+ggplot(datos,aes(x = length)) + geom_density(col='red',fill = 'black', alpha = 0.5)
+```
+
+```{r}
+mean(datos$length)
+```
+
+La siguiente función nos da una estimación(plug-in) del error estandar para la media:
+```{r}
+se <- function(x) sqrt(sum((x - mean(x)) ^ 2)) / length(x)
+se(datos$length)
+```
+
+```{r}
+sd(datos$length)
+```
+¿Cuál es la diferencia entre error estandar y desviación estandar?
+
+A continuación se presentaran ejemplos acerca del comportamiento del bootstrap no paramétrico
+
+Pensemmos en una primera muestra de la distribución antes planteada
+
+############################## Aquí vamos #############################################
+
+```{r}
+B <- 5000
+thetas <- rerun(B,Bootstrap(datos$length)) %>% flatten_dbl()
+mean(thetas)
+```
+
+
+```{r}
+se(thetas)
+```
+
+```{r}
+sd(thetas)
+```
+Ahora veamos que sucede con todos los casos combinaddos:
+
+```{r}
+th <- as.data.frame(thetas)
+ggplot(th) + geom_histogram(aes(thetas),alpha = 0.5) + 
+  geom_vline(xintercept = mean(thetas), col = 'red',alpha = 0.8) + 
+  geom_vline(xintercept = mean(datos$length),  color = "blue", 
+             linetype = "dashed",alpha = 0.8)
+```
+
+```{r}
+ggplot(datos,aes(x = length)) + 
+  geom_density(col='black',fill = 'black', alpha = 0.1) +
+  geom_vline(xintercept = mean(thetas), col = 'red',alpha = 0.8) + 
+  geom_vline(xintercept = mean(datos$length),  color = "blue", 
+             linetype = "dashed",alpha = 0.8)
+```
+
+```{r}
+seMediaBoot <- function(x, B){
+    thetas_boot <- rerun(B, Bootstrap(x)) %>% flatten_dbl()
+    se(thetas_boot)
+}
+
+B_muestras <- data_frame(n_sims = c( 5, 50, 150, 400, 1000, 1500, 3000, 
+    5000, 10000, 20000)) %>% 
+    mutate(est = map_dbl(n_sims, ~seMediaBoot(x = datos$length, B = .)))
+B_muestras
+```
+Aquí estamos viendo como se reduce, es decir, se reduce la desviación estandar de la distibución  bootstrap. Veamos que sucede con la desviación estandar
+
+```{r}
+seMediaBoot <- function(x, B){
+    thetas_boot <- rerun(B, Bootstrap(x)) %>% flatten_dbl()
+    sd(thetas_boot)
+}
+
+B_muestras <- data_frame(n_sims = c( 5, 50, 150, 400, 1000, 1500, 3000, 
+    5000, 10000, 20000)) %>% 
+    mutate(est = map_dbl(n_sims, ~seMediaBoot(x = datos$length, B = .)))
+B_muestras
+```
+

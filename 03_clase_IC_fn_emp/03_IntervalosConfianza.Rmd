@@ -1,0 +1,120 @@
+---
+title: "Intervalos de Confianza"
+author: "Francisco Paz"
+date: "23/8/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(pander) #Paquetería para sacar tablas más bonitas
+library(tidyverse)
+```
+
+### Intervalos de Confianza
+
+Función de distribución acumulada empírica
+
+$$
+\hat{F_n} = \frac{ \sum_{i =1}^{n} I(X_i \leq x) }{n}
+$$
+
+
+Del teorema 7.5 encontramos que para la creación de intervalos de confianza (desde el enfoque no paramétrico) podemos utilizar la siguiente función 
+
+$$
+\mathbb{P} (L(x) \leq F(x) \leq U(x)) \geq 1 - \alpha 
+$$
+Donde
+
+$$
+L(x) = max \{ \hat{F_n} - \epsilon_n  , 0\}
+$$
+
+
+$$
+U(x) = max \{ \hat{F_n} + \epsilon_n  , 1\}
+$$
+
+
+$$
+\epsilon_n = \sqrt{\frac{1}{2n} log(\frac{2}{\alpha})}
+$$
+
+Ahora el chiste es programar estas funciones
+
+```{r}
+f_empirica <- function(x, y){
+  n <- length(x)
+  sum <- 0
+  for (i in 1:length(x)) {
+    if(x[i] <= y){
+      sum = sum + 1
+    }
+  }
+  sum/n
+}
+
+Int_inf <- function(x,y,a){
+  res <- -100
+  n <- length(x)
+  e <- sqrt((1/(2*n))*log(2/a))
+  val <- f_empirica(x,y)-e
+  if(val < 0) res <- 0
+  if(val >= 0) res <- val
+  return(res)
+}
+
+Int_sup <- function(x,y,a){
+  res <- -100
+  n <- length(x)
+  e <- sqrt((1/(2*n))*log(2/a))
+  val <- f_empirica(x,y)+e
+  if(val < 1) res <- val
+  if(val >= 1) res <- 1
+  return(res)
+}
+```
+
+```{r}
+set.seed(2485)
+x <- rcauchy(700,0,1)
+f_empirica(x,1)
+Int_inf(x,1,0.05)
+Int_sup(x,1,0.05)
+```
+
+```{r}
+alpha <- 0.05
+l <- seq(-5,5,0.01)
+emp <- c(rep(0,length(l)))
+inf <- c(rep(0,length(l)))
+sup <- c(rep(0,length(l)))
+cont <- 1
+for (i in l) {
+    emp[cont] <- f_empirica(x,i)
+    inf[cont] <- Int_inf(x,i,alpha)
+    sup[cont] <- Int_sup(x,i,alpha)
+    cont = cont + 1
+}
+
+datos <- as.data.frame(cbind(emp,inf,sup))
+
+ggplot(datos, aes(x = seq(-5,5,0.01))) + 
+  geom_line( y = emp, show.legend = FALSE) + 
+  geom_line(aes(y = inf, col ='red'), show.legend = FALSE) + 
+  geom_line(aes(y = sup, col ='red'),show.legend = FALSE ) +
+  labs( x = 'R', y = 'cdf') 
+```
+
+Podríamos experimentar con otras distribuciones u otros rangos ¿Qué deberíamos de cambiar en el código?
+
+
+
+
+

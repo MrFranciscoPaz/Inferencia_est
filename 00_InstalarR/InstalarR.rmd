@@ -1,0 +1,24 @@
+---
+title: "Instalar R"
+author: "Francisco Paz"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Instalación de R   
+
+
+Descargar del CRAN (The Comprehensive R Archive Network) -> [**_r_**](http://cran.cnr.berkeley.edu/) <- según el sistema operativo con el que cuentes.
+
+Está descarga incluye R básico  y un editor de textos. Les recomiendo ampliamente la descarga de ->[**_rstudio_**](https://www.rstudio.com/products/rstudio/download/)<- en la versión gratis y libre .
+
+R es un lenuaje que funciona con paquetes (en clase útilizamos _tidyverse_ y _ggplot2_(contenido en tidyverse)) te recomiendo que experimentes decargando estos dos paquetes y hagas pruebas con los scripts vistos en clase.
+
+Si tienen dudas o algo no funciona bien, por favor coméntenme en clase o por correo francisco.paz.c@gmail.com
+
+**NOTA:** El texto en negritas contiene hipervinculos que te llevarán a la página de descarga.
